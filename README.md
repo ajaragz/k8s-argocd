@@ -1,50 +1,95 @@
-# k8s-fluxcd
-FluxCD in K8s cluster
+# ArgoCD_EKS_demo_app
 
-## Setting Up AWS Credentials
+This is an Infrastructure as Code project using Terraform to create an AWS Kubernetes EKS cluster. The remote state for Terraform is stored in an S3 bucket. ArgoCD is integrated into the cluster to deploy a demo app consisting of three microservices: a web UI and two REST APIs. All code is stored in the same GitHub repository.
 
-Before you begin, ensure you have your AWS credentials configured. You can do this by setting up the AWS CLI:
+## Overview
+
+The project architecture includes the following components:
+
+- **Terraform**: Used to create and manage AWS resources, including an EKS cluster.
+- **S3**: Stores the remote state for Terraform.
+- **EKS Cluster**: Hosts the Kubernetes cluster.
+- **ArgoCD**: Manages the deployment of the microservices using GitOps principles.
+- **Docker**: Containerizes the microservices.
+- **CI/CD Pipeline**: Utilizes GitHub Actions to build and push Docker images to Docker Hub.
+
+### Project Structure
+
+- `1-bootstrap_tf_state/`: Terraform code to create the S3 bucket for remote state.
+- `2-eks/`: Terraform code to deploy the EKS cluster and associated resources.
+- `src/`: Contains the microservices and Docker-related files.
+- `.github/workflows/`: Contains the CI/CD pipeline configuration.
+- `README.md`: Project documentation.
+
+## Features
+
+- **Infrastructure as Code**: Uses Terraform to manage AWS resources.
+- **GitOps**: Uses ArgoCD to manage application deployments.
+- **Microservices**: Includes a web UI and two REST APIs (weather service and temperature conversion service).
+- **CI/CD Pipeline**: Automates the build and deployment process using GitHub Actions.
+- **Scalable and Resilient**: Ensures the deployment is scalable and resilient to failures.
+
+## Getting started
+
+### Requirements
+
+- AWS CLI
+- Terraform
+- Docker
+- kubectl
+- Python 3.x
+- GitHub account to store Docker Hub credentials as secrets in the repository
+
+### Quickstart
+
+#### Step 1: Set up AWS Credentials
+
+Configure your AWS credentials using the AWS CLI:
 
 ```sh
 aws configure
 ```
 
-Follow the prompts to enter your AWS Access Key ID, Secret Access Key, region, and output format.
+#### Step 2: Bootstrap Terraform Remote State
 
-## Initializing and Applying Terraform Configuration
-
-### Step 1: Initialize Terraform
-
-Navigate to the `terraform/state/` directory and initialize Terraform:
+Navigate to the `1-bootstrap_tf_state/` directory and run:
 
 ```sh
-cd terraform/state/
-terraform init
+cd 1-bootstrap_tf_state/
+./deploy.sh
 ```
 
-This command will initialize the directory and set up the backend configuration.
+#### Step 3: Deploy EKS Cluster
 
-### Step 2: Apply Terraform Configuration
-
-Apply the Terraform configuration to create the S3 bucket and configure it as specified:
+Navigate to the `2-eks/` directory and run:
 
 ```sh
-terraform apply
+cd ../2-eks/
+./deploy.sh
 ```
 
-Follow the prompts to confirm the changes.
+#### Step 4: Build and Push Docker Images
 
-## Directory Structure and Purpose
+Set your Docker Hub username and image tag:
 
-- `main.tf`: Contains the main configuration for creating the S3 bucket.
-- `provider.tf`: Specifies the AWS provider configuration.
-- `variables.tf`: Defines the variables used in the Terraform configuration.
-- `backend.tf`: Configures the backend to use the S3 bucket for storing the Terraform state.
+```sh
+export DOCKER_USER=<your_dockerhub_username>
+export IMAGE_TAG=latest
+```
 
-## Verifying IAM Permissions
+Navigate to the `src/` directory and run the build script for each microservice:
 
-Ensure the appropriate IAM roles and policies are set up in AWS to allow Terraform to access and manage the S3 bucket. Verify the AWS credentials and permissions used by Terraform.
+```sh
+cd ../src/
+./build_push.sh web-ui
+./build_push.sh weather-service
+./build_push.sh temp-conversion-service
+```
 
-## Summary
+#### Step 5: Deploy Microservices Using ArgoCD
 
-By following these steps, the Terraform setup for the S3 bucket will be correctly configured, documented, and applied, ensuring the remote state storage is properly established.
+ArgoCD will automatically detect changes in the manifests and deploy the updated application in the cluster.
+
+## License
+
+Copyright (c) 2024.
