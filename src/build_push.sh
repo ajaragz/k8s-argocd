@@ -15,5 +15,11 @@ fail() {
 image_name=$(basename "${1}")
 
 set -x
+
 docker build -t "${DOCKER_USER}/${image_name}:${IMAGE_TAG}" -f Dockerfile "${image_name}"
 docker push "${DOCKER_USER}/${image_name}:${IMAGE_TAG}"
+
+if [[ "${IMAGE_TAG}" != "latest" ]]; then
+    docker image tag "${DOCKER_USER}/${image_name}:${IMAGE_TAG}" "${DOCKER_USER}/${image_name}:latest"
+    docker push "${DOCKER_USER}/${image_name}:latest"
+fi
