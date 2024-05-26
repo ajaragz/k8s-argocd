@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: temp-conversion-service
+  labels:
+    app: temp-conversion-service
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: temp-conversion-service
+  template:
+    metadata:
+      labels:
+        app: temp-conversion-service
+    spec:
+      containers:
+        - name: temp-conversion-service
+          image: ajarag/temp-conversion-service:0.0.5
+          ports:
+            - containerPort: 8082
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8082
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8082
+            initialDelaySeconds: 30
+            periodSeconds: 10
