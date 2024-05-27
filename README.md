@@ -68,7 +68,39 @@ cd ../2-eks/
 ./deploy.sh
 ```
 
-#### Step 4: Build and Push Docker Images
+#### Step 4: Deploy ArgoCD in the cluster
+
+Navigate to the `3-argocd` directory and run:
+
+```sh
+cd ../2-argocd/
+./deploy.sh
+```
+
+Obtain the UI endpoint and admin password to check that ArgoCD is alive
+```sh
+echo https://`kubectl get service -n argocd argocd-server -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'`
+echo `kubectl get secrets argocd-initial-admin-secret -o yaml -n argocd -o jsonpath='{.data.password}' | base64 --decode`
+```
+
+#### Step 5: Deploy the App Using ArgoCD
+
+If this repository is private, authentication needs to be setup to allow ArgoCD access to it. A Github Personal Access Token (PAT) with access only to this repository can be used for this purpose.
+
+Check out [here](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-fine-grained-personal-access-token) the instructions on how to create the token. A read-only access to contents permission is enough for the token.
+
+Apply the Secret manifest to store the repository access token
+```sh
+export GITHUB_TOKEN=<YOUR_PERSONAL_ACCESS_TOKEN>
+sed -e "s/GITHUB_TOKEN/${GITHUB_TOKEN}/g" argocd-app/repo-secret.yaml | kubectl apply -f -
+```
+
+Apply the ArgoCD Application manifest to create the Application in ArgoCD
+```sh
+kubectl apply -f argocd-app/demo-app.yaml
+```
+
+#### Step 6: Build and Push Docker Images
 
 Set your Docker Hub username and image tag:
 
@@ -85,11 +117,3 @@ cd ../src/
 ./build_push.sh weather-service
 ./build_push.sh temp-conversion-service
 ```
-
-#### Step 5: Deploy Microservices Using ArgoCD
-
-ArgoCD will automatically detect changes in the manifests and deploy the updated application in the cluster.
-
-## License
-
-Copyright (c) 2024.
