@@ -11,7 +11,7 @@ do
     set -x
     cd ${step}
     terraform init
-    terraform apply
+    terraform apply -auto-approve
     set +x
     cd ..
 done
