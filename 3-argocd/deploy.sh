@@ -1,6 +1,0 @@
-#!/bin/bash
-
-set -euxo pipefail
-
-terraform init
-terraform apply
