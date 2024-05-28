@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: web-ui
-          image: ajarag/web-ui:0.24
+          image: ajarag/web-ui:0.26
           ports:
             - containerPort: 8080
           livenessProbe:
