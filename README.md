@@ -46,10 +46,11 @@ Project Structure:
 
 ## Getting Started
 
-The infrastructure script creates in order:
+The infrastructure script creates, in order:
 - an S3 bucket to store the Terraform remote state
 - a VPC and an EKS cluster, and all the resources associated to secure and provide connectivity inside and outside the cluster: managed nodes, security groups, policies, subnets, load balancer, public IP, etc.
 - a workload for ArgoCD inside the cluster
+- an ArgoCD application to deploy and track changes of the demo app
 
 ### Requirements
 
@@ -62,6 +63,29 @@ The infrastructure script creates in order:
 ### Quickstart
 
 By following these steps, you will set up the infrastructure, deploy ArgoCD, and manage the application deployment using GitOps principles.
+
+#### Step 0: Update Docker repositories in the Kubernetes templates
+
+I've worked with my own Docker Hub repositories. To make the pipeline work with repos from a different user, you have to update the hardcoded Docker image names in the Kubernetes templates. I.e.:
+```yaml
+spec:
+  template:
+    spec:
+      containers:
+          image: ajarag/web-ui:0.1 # ajarag should be replaced by your Docker username
+```
+
+You can do that with
+```sh
+export DOCKER_USERNAME=<YOUR_DOCKER_USERNAME>
+for dir in k8s/*/; do
+  component=$(basename ${dir})
+  sed -i "s|image: [^/]*/\(.*\)|image: ${DOCKER_USERNAME}/\1|" \
+    k8s/${component}/deployment.yaml
+done
+```
+
+**Important**: *Commit these changes to the main branch*.
 
 #### Step 1: Set up Docker Credentials in GitHub Actions
 
@@ -76,6 +100,17 @@ Configure your AWS credentials using the AWS CLI:
 aws configure
 ```
 
+#### Step 3: Create a Github token
+
+Assuming this repository is private, authentication needs to be set up to allow ArgoCD access to it. A GitHub Personal Access Token (PAT) with access only to this repository can be used for this purpose.
+
+Check out [here](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-fine-grained-personal-access-token) the instructions on how to create the token. A read-only access to contents permission is enough for the token.
+
+Export the token as an environment variable
+```sh
+export GITHUB_TOKEN=<YOUR_GITHUB_TOKEN>
+```
+
 #### Step 3: Deploy the Infrastructure with Terraform
 
 Navigate to the `infra/` directory and run:
@@ -84,48 +119,14 @@ cd infra/
 ./deploy.sh
 ```
 
-Once the script is finished, you can get the credentials to access the cluster with:
+That's it. Check the script output to see the app deployed. The app pods will appear shortly
 ```sh
-cd eks
-aws eks --region $(terraform output -raw region) update-kubeconfig \
-    --name $(terraform output -raw cluster_name) \
-    --kubeconfig "${KUBECONFIG_DIR}/$(terraform output -raw cluster_name).yaml"
-```
-
-Obtain the endpoint and the admin password of the ArgoCD UI:
-```sh
-echo https://$(kubectl get service -n argocd argocd-server -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-echo $(kubectl get secrets -n argocd argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 --decode)
-```
-
-#### Step 4: Deploy the App Using ArgoCD
-
-If this repository is private, authentication needs to be set up to allow ArgoCD access to it. A GitHub Personal Access Token (PAT) with access only to this repository can be used for this purpose.
-
-Check out [here](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-fine-grained-personal-access-token) the instructions on how to create the token. A read-only access to contents permission is enough for the token.
-
-Apply the Secret manifest to store the repository access token with:
-```sh
-export GITHUB_TOKEN=<YOUR_PERSONAL_ACCESS_TOKEN>
-sed -e "s/GITHUB_TOKEN/${GITHUB_TOKEN}/g" argocd-apps/repo-secret.yaml | kubectl apply -f -
-```
-
-Apply the ArgoCD Application manifest to create the Application in ArgoCD:
-```sh
-kubectl apply -f argocd-apps/demo-app.yaml
-```
-
-After this, you should see that the ArgoCD application for this app is deployed with:
-```sh
-kubectl get app -n argocd
-```
-
-and the workloads of the app are deployed as well:
-```sh
+export KUBECONFIG=./argocd-demo-cluster-kubeconfig.yaml
 kubectl get all -n demo-app
 ```
+You can see it in the ArgoCD UI as well. The endpoint and credentials are also in the script output.
 
-#### Step 5: Trigger the Pipeline
+### Trigger the Pipeline
 
 Now each change in the app source code will automatically end up deployed in the EKS cluster.
 
