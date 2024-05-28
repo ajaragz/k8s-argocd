@@ -10,6 +10,7 @@ The project architecture includes the following components:
 - **S3**: Stores the remote state for Terraform.
 - **EKS Cluster**: Hosts the Kubernetes cluster.
 - **ArgoCD**: Manages the deployment of the microservices using GitOps principles.
+- **Prometheus/Grafana**: Monitors the cluster and ArgoCD.
 - **Docker**: Containerizes the microservices.
 - **CI/CD Pipeline**: Utilizes GitHub Actions to build and push Docker images to Docker Hub.
 
@@ -30,7 +31,7 @@ Project Structure:
 - `infra/`:
   - `bootstrap_tf_state/`: Terraform code to create the S3 bucket for remote state.
   - `eks/`: Terraform code to deploy the EKS cluster and associated resources.
-  - `argocd/`: Terraform code to deploy ArgoCD in the EKS cluster.
+  - `argocd/`: Terraform code to deploy ArgoCD and the Prometheus stack in the EKS cluster.
     - `argocd-apps/`: ArgoCD Application manifests to track the app Kubernetes manifests.
 - `k8s/`: Kubernetes manifests for the app.
 - `.github/workflows/`: CI/CD pipeline code to build and push the app Docker images.
@@ -136,3 +137,9 @@ After a while, you should see how ArgoCD updates the workloads in the cluster wi
 ```sh
 kubectl get pod -n demo-app -o yaml | grep image:
 ```
+
+### Monitoring
+
+The prometheus stack is deployed in the cluster for monitoring. You can port-forward to Grafana or Prometheus to check it out.
+
+There is a `serviceMonitor` for each of the ArgoCD main components deployed. 

@@ -1,3 +1,40 @@
 server:
   service:
     type: LoadBalancer
+
+# Prometheus Integration
+
+controller:
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      interval: 30s
+      selector:
+        release: kube-prometheus-stack
+dex:
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      interval: 30s
+      selector:
+        release: kube-prometheus-stack
+  
+redis:
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      interval: 30s
+      selector:
+        release: kube-prometheus-stack
+
+server:
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      interval: 30s
+      selector:
+        release: kube-prometheus-stack
