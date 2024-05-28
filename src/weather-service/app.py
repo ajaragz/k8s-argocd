@@ -1,5 +1,7 @@
 from flask import Flask, jsonify
 
+# Dummy weather service
+
 app = Flask(__name__)
 
 # Sample static weather data
