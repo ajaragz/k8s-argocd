@@ -1,9 +1,3 @@
-server:
-  service:
-    type: LoadBalancer
-
-# Prometheus Integration
-
 controller:
   metrics:
     enabled: true
@@ -31,6 +25,8 @@ redis:
         release: kube-prometheus-stack
 
 server:
+  service:
+    type: LoadBalancer
   metrics:
     enabled: true
     serviceMonitor:

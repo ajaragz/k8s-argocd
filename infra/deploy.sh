@@ -19,7 +19,7 @@ KUBECONFIG_DIR=$(pwd)
 GITHUB_TOKEN="${GITHUB_TOKEN}"
 
 # Deployment of EKS and ArgoCD
-TF_STEPS="bootstrap_tf_state eks argocd"
+TF_STEPS="bootstrap_tf_state eks k8s-resources"
 for step in ${TF_STEPS}
 do
     echo
@@ -46,9 +46,9 @@ echo
 
 # ArgoCD Application resource deployment
 cd ..
-sed -e "s/GITHUB_TOKEN/${GITHUB_TOKEN}/g" argocd/argocd-apps/repo-secret.yaml \
+sed -e "s/GITHUB_TOKEN/${GITHUB_TOKEN}/g" k8s-resources/argocd-apps/repo-secret.yaml \
     | kubectl apply -f -
-kubectl apply -f argocd/argocd-apps/demo-app.yaml
+kubectl apply -f k8s-resources/argocd-apps/demo-app.yaml
 
 # Show resources and ArgoCD endpoint
 echo
