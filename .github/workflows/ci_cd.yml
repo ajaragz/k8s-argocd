@@ -12,7 +12,7 @@ name: CD pipeline
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - 'src/**' # only changes to source code trigger the pipeline
   workflow_dispatch:
