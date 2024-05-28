@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: weather-service
-          image: ajarag/weather-service:0.0.5
+          image: ajarag/weather-service:0.24
           ports:
             - containerPort: 8081
           livenessProbe:

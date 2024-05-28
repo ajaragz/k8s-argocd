@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: temp-conversion-service
-          image: ajarag/temp-conversion-service:0.0.5
+          image: ajarag/temp-conversion-service:0.24
           ports:
             - containerPort: 8082
           livenessProbe:
